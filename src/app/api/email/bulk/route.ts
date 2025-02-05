@@ -16,18 +16,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Read the Excel file
+    // อ่านไฟล์ Excel
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const data: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Extract email addresses from the first column
+    // ดึง email จากคอลัมน์แรก
     const emails = data
-      .slice(1) // Skip the header row
-      .map((row: any) => row[0]?.trim()) // Extract and trim email addresses
-      .filter((email: string) => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)); // Validate email format
+      .slice(1) // ข้าม header row
+      .map((row) => (Array.isArray(row) && typeof row[0] === "string" ? row[0].trim() : ""))
+      .filter((email) => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 
     if (emails.length === 0) {
       return NextResponse.json({ error: "No valid email addresses found in the file" }, { status: 400 });
@@ -41,22 +41,20 @@ export async function POST(req: Request) {
       },
     });
 
-    // Track duplicate emails
+    // เก็บอีเมลที่ซ้ำกัน
     const duplicateEmails: string[] = [];
 
-    // Send emails to all addresses
     for (const email of emails) {
-      // Check if the email already exists in Supabase
-      const { data: existingEmail, error: fetchError } = await supabase
+      // ตรวจสอบว่ามี email อยู่ใน Supabase แล้วหรือยัง
+      const { data: existingEmail } = await supabase
         .from("email_logs")
         .select("email")
         .eq("email", email)
         .single();
 
       if (existingEmail) {
-        // If the email already exists, add it to the duplicates list
         duplicateEmails.push(email);
-        continue; // Skip sending and logging this email
+        continue;
       }
 
       const trackid = Math.random().toString(36).substring(7);
@@ -71,7 +69,6 @@ export async function POST(req: Request) {
 
       await transporter.sendMail(emailOptions);
 
-      // Log the email in Supabase
       const { error: insertError } = await supabase
         .from("email_logs")
         .insert([{ email, trackid, status: "sent" }])
@@ -83,7 +80,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // If there are duplicate emails, return a warning
     if (duplicateEmails.length > 0) {
       return NextResponse.json(
         {
