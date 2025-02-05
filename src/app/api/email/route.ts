@@ -34,9 +34,10 @@ export async function POST(req: Request) {
         pass: process.env.EMAIL_PASS,
       },
     });
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL;
 
     const trackid = Math.random().toString(36).substring(7);
-    const trackingUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/email/track/${trackid}`;
+    const trackingUrl = `${baseUrl}/api/email/track/${trackid}`;
 
     const emailOptions = {
       from: process.env.EMAIL_USER,
