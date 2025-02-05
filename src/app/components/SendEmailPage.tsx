@@ -45,9 +45,10 @@ export default function SendEmailPage() {
            setErrorMessage(data.error || "❌ Failed to send email.");
          }
        } catch (error) {
-        console.log(error)
-         setErrorMessage("❌ An unexpected error occurred.");
-       } finally {
+        console.error("Error sending email:", error);
+        setErrorMessage("❌ An unexpected error occurred.");
+      }
+       finally {
          setLoading(false);
        }
     };

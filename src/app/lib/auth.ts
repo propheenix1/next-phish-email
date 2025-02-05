@@ -1,4 +1,3 @@
-//lib/auth.ts
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -35,9 +34,7 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          const secretCheckResult = await response.json();
-
-          // ตรวจสอบ Password และ Username
+          // ถ้าผ่านการตรวจสอบ API ให้เช็ค Password และ Username
           if (
             credentials.secretPassword === process.env.SECRET_PASSWORD &&
             credentials.secretUserName === process.env.SECRET_USER_NAME
@@ -77,7 +74,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 24 * 60 * 60, // 24 ชั่วโมง
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

@@ -19,8 +19,12 @@ export async function POST(req: Request) {
       .eq("email", email)
       .single();
 
+    if (fetchError) {
+      console.error("Error fetching email:", fetchError.message);
+      return NextResponse.json({ error: "Database query failed" }, { status: 500 });
+    }
+
     if (existingEmail) {
-      // If the email already exists, return an error
       return NextResponse.json({ error: "Duplicate email found" }, { status: 400 });
     }
 

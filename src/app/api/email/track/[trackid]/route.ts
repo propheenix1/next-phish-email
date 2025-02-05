@@ -2,24 +2,24 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
- process.env.SUPABASE_URL!,
- process.env.SUPABASE_KEY!
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
 );
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   req: Request,
-  { params }: { params: { trackid: string } }
+  { params }: { params: Promise<{ trackid: string }> }
 ) {
   try {
-    const trackid = await params.trackid;
+    const { trackid } = await params; // ✅ รอให้ params ถูก resolved ก่อนใช้งาน
 
     const { error } = await supabase
       .from("email_logs")
-      .update({ 
+      .update({
         clicked_at: new Date().toISOString(),
-        clicked_status: true 
+        clicked_status: true,
       })
       .eq("trackid", trackid);
 

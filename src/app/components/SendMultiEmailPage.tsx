@@ -1,4 +1,3 @@
-// components/SendEmailPage.tsx
 "use client";
 
 import { useState } from "react";
@@ -14,41 +13,42 @@ export default function SendMultiEmailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!file) {
       setErrorMessage("Please upload an Excel file.");
       return;
     }
-  
+
     setLoading(true);
     setSuccessMessage(null);
     setErrorMessage(null);
     setDuplicateEmails([]);
-  
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("subject", subject);
     formData.append("message", message);
-  
+
     try {
       const res = await fetch("/api/email/bulk", {
         method: "POST",
         body: formData,
       });
-  
+
       const data = await res.json();
-  
+
       if (res.ok) {
         if (data.duplicates && data.duplicates.length > 0) {
-            setDuplicateEmails(data.duplicates);
-            setErrorMessage("❌ Duplicate emails found. Please resolve them before sending.");
+          setDuplicateEmails(data.duplicates);
+          setErrorMessage("❌ Duplicate emails found. Please resolve them before sending.");
         } else {
-            setSuccessMessage("✅ Emails sent successfully!");
+          setSuccessMessage("✅ Emails sent successfully!");
         }
       } else {
         setErrorMessage(data.error || "❌ Failed to send emails.");
       }
     } catch (error) {
+      console.error("Error sending emails:", error); // ✅ ใช้ error เพื่อแก้ warning
       setErrorMessage("❌ An unexpected error occurred.");
     } finally {
       setLoading(false);
@@ -105,32 +105,32 @@ export default function SendMultiEmailPage() {
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 mr-3 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Sending...
-                </>
-              ) : (
-                "Send Emails"
-              )}
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Sending...
+              </>
+            ) : (
+              "Send Emails"
+            )}
           </button>
 
           {/* Success Message */}
@@ -146,6 +146,7 @@ export default function SendMultiEmailPage() {
               {errorMessage}
             </div>
           )}
+
           {/* Duplicate Emails Warning */}
           {duplicateEmails.length > 0 && (
             <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg">
@@ -156,7 +157,7 @@ export default function SendMultiEmailPage() {
                 ))}
               </ul>
             </div>
-         )}
+          )}
         </form>
       </div>
     </div>
