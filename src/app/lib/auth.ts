@@ -21,30 +21,29 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // ตรวจสอบ Secret ID ผ่าน API
-          const response = await fetch(
-            `${process.env.NEXTAUTH_URL}/api/check-secret`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ secretID: credentials.secretId }),
-            }
-          );
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL;
+
+          const response = await fetch(`${siteUrl}/api/check-secret`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secretID: credentials.secretId }),
+          });
 
           if (!response.ok) {
             return null;
           }
 
-          // ถ้าผ่านการตรวจสอบ API ให้เช็ค Password และ Username
+          // ตรวจสอบ Password และ Username
           if (
             credentials.secretPassword === process.env.SECRET_PASSWORD &&
             credentials.secretUserName === process.env.SECRET_USER_NAME
           ) {
             return {
-              id: credentials.secretPassword,
+              id: credentials.secretId,
               name: credentials.secretUserName,
             };
           }
-          
+
           return null;
         } catch (error) {
           console.error('Auth error:', error);
