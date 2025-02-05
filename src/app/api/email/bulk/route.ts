@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { supabase } from "../../../lib/supabaseClient";
+import { supabase } from '../../../lib/supabaseClient';
 import * as XLSX from "xlsx";
 
 
