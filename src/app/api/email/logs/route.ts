@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// ตั้งค่า Supabase Client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
+import { supabase } from "../../../lib/supabaseClient";
 
 // API สำหรับดึงข้อมูล email_logs
 export async function GET() {

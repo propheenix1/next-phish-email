@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../../../lib/supabaseClient";
 import * as XLSX from "xlsx";
 
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+
 
 export async function POST(req: Request) {
   try {
