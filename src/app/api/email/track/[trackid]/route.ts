@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
 import { supabase } from "../../../../lib/supabaseClient";
+=======
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+>>>>>>> ddefd0d082c76d6e4ed2f8b569b4bc3bdd2f73b0
 
 export const dynamic = "force-dynamic";
 
