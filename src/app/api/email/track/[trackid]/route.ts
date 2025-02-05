@@ -23,7 +23,7 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.redirect(`http://localhost:3000/email/track/${trackid}`);
+    return NextResponse.redirect(`/email/track/${trackid}`);
   } catch (err) {
     console.error("Unexpected Error:", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
