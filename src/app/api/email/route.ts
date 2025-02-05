@@ -15,9 +15,9 @@ export async function POST(req: Request) {
       .from("email_logs")
       .select("email")
       .eq("email", email)
-      .single();
+      .maybeSingle(); // ✅ ใช้ maybeSingle() แทน single()
 
-    if (fetchError) {
+    if (fetchError && fetchError.code !== "PGRST116") {
       console.error("Error fetching email:", fetchError.message);
       return NextResponse.json({ error: "Database query failed" }, { status: 500 });
     }
@@ -50,8 +50,7 @@ export async function POST(req: Request) {
     // Log the email in Supabase
     const { error: insertError } = await supabase
       .from("email_logs")
-      .insert([{ email, trackid, status: "sent" }])
-      .single();
+      .insert([{ email, trackid, status: "sent" }]);
 
     if (insertError) {
       console.error("Supabase Insert Error:", insertError.message);
