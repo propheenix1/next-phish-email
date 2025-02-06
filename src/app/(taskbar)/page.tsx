@@ -1,15 +1,18 @@
-// app/send/page.tsx
+// app/(taskbar)/page.tsx
 import { getAuthSession } from '../../../utils/auth-utils';
 import { redirect } from 'next/navigation';
-import SendEmailPage from '../components/SendEmailPage';
+import Dashboard from '../components/Dashboard';
 
-export default async function SendPage() {
+
+export default async function HomePage() {
     const session = await getAuthSession();
 
     if (!session) {
         redirect('/login-secret');
     }
+
     return (
-        <SendEmailPage/>
+   
+       <Dashboard />
     );
 }

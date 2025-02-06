@@ -4,9 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "./lib/auth";
 import "./globals.css";
 
-import TaskMenu from "./components/TaskMenu";
-
-// ใช้ Kanit เท่านั้น
 const kanit = Kanit({
   variable: "--font-kanit",
   subsets: ["latin", "thai"],
@@ -26,8 +23,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${kanit.variable} antialiased`}>
-        {children}
-        <TaskMenu session={session} /> {/* ส่ง session ไปที่ TaskMenu */}
+        {children} {/* ✅ TaskMenu อยู่แค่ใน (taskbar) แล้ว ไม่ต้องใส่ที่นี่ */}
       </body>
     </html>
   );
