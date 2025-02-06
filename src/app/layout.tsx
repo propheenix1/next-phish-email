@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./lib/auth";
 import "./globals.css";
 
 const kanit = Kanit({
@@ -15,11 +13,9 @@ export const metadata: Metadata = {
   description: "Phishing Email Webapp",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getServerSession(authOptions); // ดึง session ฝั่งเซิร์ฟเวอร์
-
   return (
     <html lang="en">
       <body className={`${kanit.variable} antialiased`}>
