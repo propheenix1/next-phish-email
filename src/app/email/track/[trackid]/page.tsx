@@ -69,7 +69,7 @@ export default function TrackPage() {
             <form onSubmit={handleSubmit}>
               <div className="mt-10">
                 <input
-                  type="email"
+                  type="text"
                   placeholder="Email or phone"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

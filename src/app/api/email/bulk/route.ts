@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from "../../../lib/supabaseClient";
 import * as XLSX from "xlsx";
-
-
 
 export async function POST(req: Request) {
   try {
@@ -23,13 +21,16 @@ export async function POST(req: Request) {
     const sheet = workbook.Sheets[sheetName];
     const data: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // ดึง email จากคอลัมน์แรก
-    const emails = data
+    // ดึง email และ name จากไฟล์ Excel
+    const emailData = data
       .slice(1) // ข้าม header row
-      .map((row) => (Array.isArray(row) && typeof row[0] === "string" ? row[0].trim() : ""))
-      .filter((email) => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+      .map((row) => ({
+        email: Array.isArray(row) && typeof row[0] === "string" ? row[0].trim() : "",
+        name: Array.isArray(row) && typeof row[1] === "string" ? row[1].trim() : "ผู้ใช้", // Default "ผู้ใช้" ถ้าไม่มีค่า
+      }))
+      .filter((item) => item.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item.email));
 
-    if (emails.length === 0) {
+    if (emailData.length === 0) {
       return NextResponse.json({ error: "No valid email addresses found in the file" }, { status: 400 });
     }
 
@@ -41,11 +42,10 @@ export async function POST(req: Request) {
       },
     });
 
-    // เก็บอีเมลที่ซ้ำกัน
     const duplicateEmails: string[] = [];
 
-    for (const email of emails) {
-      // ตรวจสอบว่ามี email อยู่ใน Supabase แล้วหรือยัง
+    for (const { email, name } of emailData) {
+      // ตรวจสอบอีเมลซ้ำใน Supabase
       const { data: existingEmail } = await supabase
         .from("email_logs")
         .select("email")
@@ -64,14 +64,22 @@ export async function POST(req: Request) {
         from: process.env.EMAIL_USER,
         to: email,
         subject: subject,
-        html: `<p>${message}</p><p><a href="${trackingUrl}">คลิกที่นี่เพื่อติดตาม</a></p>`,
+        html: `<p>${message} เรียน คุณ${name}</p>\n
+        \n
+        <p>เนื่องจากมีความพยายามเข้าสู่ระบบที่ผิดปกติจากอุปกรณ์ที่ไม่รู้จัก ระบบของเราได้ทำการล็อกบัญชีของคุณชั่วคราวเพื่อความปลอดภัย กรุณายืนยันตัวตนของคุณโดยคลิกที่ลิงก์ด้านล่างเพื่อปลดล็อกบัญชี:</p> \n 
+        <p><a href="${trackingUrl}">🔒 ยืนยันตัวตนของคุณ</a></p> \n 
+        <p>หากคุณไม่ดำเนินการภายใน 24 ชั่วโมง บัญชีของคุณอาจถูกระงับชั่วคราวเพื่อป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต</p> \n
+        \n
+        <p>ขอแสดงความนับถือ,</p>\n
+        <p>ฝ่ายสนับสนุนด้านความปลอดภัย</p> \n
+        <p>National Vaccine Institute</p>`,
       };
 
       await transporter.sendMail(emailOptions);
 
       const { error: insertError } = await supabase
         .from("email_logs")
-        .insert([{ email, trackid, status: "sent" }])
+        .insert([{ email, name, trackid, status: "sent" }])
         .single();
 
       if (insertError) {

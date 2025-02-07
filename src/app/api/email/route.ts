@@ -4,18 +4,18 @@ import { supabase } from '../../lib/supabaseClient';
 
 export async function POST(req: Request) {
   try {
-    const { email, subject, message } = await req.json();
+    const { email, name, subject, message } = await req.json();
 
-    if (!email || !subject || !message) {
+    if (!email || !name || !subject || !message) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Check if the email already exists in Supabase
     const { data: existingEmail, error: fetchError } = await supabase
       .from("email_logs")
-      .select("email")
+      .select("email, name")  // ดึงทั้ง email และ name จากฐานข้อมูล
       .eq("email", email)
-      .maybeSingle(); // ✅ ใช้ maybeSingle() แทน single()
+      .maybeSingle(); 
 
     if (fetchError && fetchError.code !== "PGRST116") {
       console.error("Error fetching email:", fetchError.message);
@@ -39,11 +39,23 @@ export async function POST(req: Request) {
     const trackid = Math.random().toString(36).substring(7);
     const trackingUrl = `${baseUrl}/api/email/track/${trackid}`;
 
+    // ใช้ชื่อจากฐานข้อมูลสำหรับ trackname
+    const trackname = name;
+
     const emailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: subject,
-      html: `<p>${message}</p><p><a href="${trackingUrl}">คลิกที่นี่เพื่อติดตาม</a></p>`,
+      html: `<p>${message} เรียน คุณ${trackname}</p>\n
+        \n
+        <p>เนื่องจากมีความพยายามเข้าสู่ระบบที่ผิดปกติจากอุปกรณ์ที่ไม่รู้จัก ระบบของเราได้ทำการล็อกบัญชีของคุณชั่วคราวเพื่อความปลอดภัย กรุณายืนยันตัวตนของคุณโดยคลิกที่ลิงก์ด้านล่างเพื่อปลดล็อกบัญชี:</p> \n 
+        <p><a href="${trackingUrl}">🔒 ยืนยันตัวตนของคุณ</a></p> \n 
+        <p>หากคุณไม่ดำเนินการภายใน 24 ชั่วโมง บัญชีของคุณอาจถูกระงับชั่วคราวเพื่อป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต</p> \n
+        \n
+        \n
+        <p>ขอแสดงความนับถือ,</p>\n
+        <p>ฝ่ายสนับสนุนด้านความปลอดภัย</p> \n
+        <p>National Vaccine Institute</p>`,
     };
 
     await transporter.sendMail(emailOptions);
@@ -51,7 +63,7 @@ export async function POST(req: Request) {
     // Log the email in Supabase
     const { error: insertError } = await supabase
       .from("email_logs")
-      .insert([{ email, trackid, status: "sent" }]);
+      .insert([{ email, name, trackid, status: "sent" }]);
 
     if (insertError) {
       console.error("Supabase Insert Error:", insertError.message);

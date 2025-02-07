@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function SendEmailPage() {
     const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
     const [subject, setSubject] = useState("");
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function SendEmailPage() {
     const handleSubmit = async (e: React.FormEvent) => {
        e.preventDefault();
 
-       if (!email || !subject || !message) {
+       if (!email || !name || !subject || !message) {
          setErrorMessage("Please fill in all fields.");
          return;
        }
@@ -30,7 +31,7 @@ export default function SendEmailPage() {
          const res = await fetch("/api/email", {
            method: "POST",
            headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ email, subject, message }),
+           body: JSON.stringify({ email, name, subject, message }),
          });
 
          const data = await res.json();
@@ -66,6 +67,19 @@ export default function SendEmailPage() {
                value={email}
                onChange={(e) => setEmail(e.target.value)}
                placeholder="Enter recipient's email"
+               required
+               className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300 outline-none"
+             />
+           </div>
+
+           {/* Name Input Option */}
+           <div>
+             <label className="block text-sm font-medium text-gray-700">Name</label>
+             <input
+               type="name"
+               value={name}
+               onChange={(e) => setName(e.target.value)}
+               placeholder="Enter recipient's name"
                required
                className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300 outline-none"
              />
